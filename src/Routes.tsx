@@ -1,20 +1,18 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { ComponentType, useContext } from 'react'
+import { AuthContext } from './contexts/AuthContext'
 import SignIn from './pages/SignIn'
 import SignUp from './pages/SignUp'
 import Dashboard from './pages/Dashboard'
-import { ComponentType, useEffect, useState } from 'react'
 
 const AppRoutes = () => {
-    const loading = false
-    const signed = false
-
-    const routeWrapper = (Component: ComponentType, isPrivate?: boolean) => {
+    const RouteWrapper = (Component: ComponentType, isPrivate?: boolean) => {
+        const { signed, loading } = useContext(AuthContext)
         if(loading){
             return <div>Carregando...</div>
         }
-
         if(!signed && isPrivate)
-            return <Navigate to="/?notify=invalidCredentials" replace={true} />
+            return <Navigate to="/" replace={true} />
         
         if(signed && !isPrivate)
             return <Navigate to="/dashboard?notify=loginSuccess" replace={true} />
@@ -23,13 +21,11 @@ const AppRoutes = () => {
     }
 
     return (
-        <BrowserRouter>
-            <Routes>
-                <Route path='/' element={routeWrapper(SignIn)} />
-                <Route path='/register' element={routeWrapper(SignUp)} />
-                <Route path='/dashboard' element={routeWrapper(Dashboard, true)} />
-            </Routes>
-        </BrowserRouter>
+        <Routes>
+            <Route path='/' element={RouteWrapper(SignIn)} />
+            <Route path='/register' element={RouteWrapper(SignUp)} />
+            <Route path='/dashboard' element={RouteWrapper(Dashboard, true)} />
+        </Routes>
     )
 }
 
