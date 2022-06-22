@@ -9,19 +9,18 @@ const App = () => {
     
     useEffect(() => {
         const loadStorageAuth = () => {
-            const userStorage = localStorage.getItem('user')
-            if(userStorage){
-                setUser(JSON.parse(userStorage))
-                setLoading(false)
+            const sessionToken = sessionStorage.getItem('@AuthFirebase:token')
+            const sessionUser = sessionStorage.getItem('@AuthFirebase:user')
+            if(sessionToken && sessionUser){
+                setUser(JSON.parse(sessionUser))
             }
             setLoading(false)
         }
-        
         loadStorageAuth()
     }, [])
 
     return (
-        <AuthContext.Provider value={{ signed: !!user, user: user, loading }}>
+        <AuthContext.Provider value={{ signed: !!user, user: user, setUser, loading, setLoading }}>
             <BrowserRouter>
                 <Routes />
             </BrowserRouter>

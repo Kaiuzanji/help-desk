@@ -1,18 +1,48 @@
-import { initializeApp, getApp, getApps } from 'firebase/app'
-import 'firebase/auth'
+import { initializeApp, getApps } from 'firebase/app'
+import { GoogleAuthProvider, getAuth, signInWithPopup, signInWithEmailAndPassword, GithubAuthProvider, AuthCredential, EmailAuthProvider } from 'firebase/auth'
+import { firebaseConfig } from '../config/settings'
 // Your web app's Firebase configuration
-const firebaseConfig = {
-    apiKey: "AIzaSyAMnjzSVLa_OJku1QixvNv6aiS_PcMz46Y",
-    authDomain: "help-desk-85cf5.firebaseapp.com",
-    projectId: "help-desk-85cf5",
-    storageBucket: "help-desk-85cf5.appspot.com",
-    messagingSenderId: "678904155125",
-    appId: "1:678904155125:web:6094dcf5da85cd2f712ebc"
-}
-// Initialize Firebase
-if(!getApps().length)
-    initializeApp(firebaseConfig)
 
-export const getAllApps = () => {
-    console.log(getApp())
+export const signInGoogle = async () => {
+    const app = initializeApp(firebaseConfig)
+    const provider = new GoogleAuthProvider() 
+    const auth = getAuth(app)
+    return await signInWithPopup(auth, provider)
+    .then( result => {
+        const credential = GoogleAuthProvider.credentialFromResult(result)
+        const token = credential?.accessToken
+        return { user:result.user, token: token }
+    })
+    .catch( error => {
+        console.error(error)
+        return null
+    })
+}
+
+export const signInUser = async (email: string, password: string) => {
+    const app = initializeApp(firebaseConfig)
+    const auth = getAuth(app)
+    return await signInWithEmailAndPassword(auth, email, password)
+    .then( result => {
+        return { user: result.user }
+    })
+    .catch( err => {
+        console.log(err)
+    })
+}
+
+export const signInGithub = async () => {
+    const app = initializeApp(firebaseConfig)
+    const provider = new GithubAuthProvider() 
+    const auth = getAuth(app)
+    return await signInWithPopup(auth, provider)
+    .then( result => {
+        const credential = GithubAuthProvider.credentialFromResult(result)
+        const token = credential?.accessToken
+        return { user: result.user, token }
+    })
+    .catch( error => {
+        console.error(error)
+        return null
+    })
 }

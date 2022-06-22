@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import { ComponentType, useContext } from 'react'
 import { AuthContext } from './contexts/AuthContext'
 import SignIn from './pages/SignIn'
@@ -7,10 +7,8 @@ import Dashboard from './pages/Dashboard'
 
 const AppRoutes = () => {
     const RouteWrapper = (Component: ComponentType, isPrivate?: boolean) => {
-        const { signed, loading } = useContext(AuthContext)
-        if(loading){
-            return <div>Carregando...</div>
-        }
+        const { signed } = useContext(AuthContext)
+
         if(!signed && isPrivate)
             return <Navigate to="/" replace={true} />
         

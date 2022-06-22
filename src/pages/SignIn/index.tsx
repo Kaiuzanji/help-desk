@@ -1,10 +1,33 @@
-import { LockSimple, Code } from 'phosphor-react'
-import { useState } from 'react'
+import { LockSimple, Code, GithubLogo, GoogleLogo, Spinner } from 'phosphor-react'
+import { OAuthCredential, UserCredential, UserInfo, UserMetadata } from 'firebase/auth'
+import { FormEvent, useContext, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { AuthContext, User } from '../../contexts/AuthContext'
 import { Link } from 'react-router-dom'
+import { signInGoogle, signInGithub, signInUser } from '../../services/firebase'
 
 const SignIn = () => {
+    const { setUser, setLoading, loading } = useContext(AuthContext)
     const [email, setEmail] = useState<string>('')
     const [password, setPassword] = useState<string>('')
+    const navigate = useNavigate()
+
+    const saveUserIntoStorage = (user: User, token: string | undefined) => {
+        setUser(user)
+        sessionStorage.setItem('@AuthFirebase:token', token || "")
+        sessionStorage.setItem('@AuthFirebase:user', JSON.stringify(user))
+    }
+
+    const handleLoginSubmit = async (e: FormEvent, signIn: () => Promise<{ user: UserInfo | null; token: string | undefined } | null> ) => {
+      e.preventDefault()
+      setLoading(true)
+      const sign = await signIn()
+      if(sign?.user?.email){
+        saveUserIntoStorage({ email: sign?.user.email, name: sign?.user.displayName }, sign?.token)
+        setLoading(false)
+        navigate("/dashboard", { replace: true })
+      }
+    }
 
     return (
         <div className="min-h-full flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-green-400 to-blue-500 h-screen">
@@ -18,27 +41,39 @@ const SignIn = () => {
                 <label htmlFor="email-address" className="sr-only">
                   Email
                 </label>
-                <input onChange={(e) => setEmail(e.target.value)} value={email} id="email-address" name="email" type="email" autoComplete="email" required className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-pink-500 focus:border-pink-500 focus:z-10 sm:text-sm" placeholder="Email"/>
+                <input onChange={(e) => setEmail(e.target.value)} value={email} id="email-address" name="email" type="email" autoComplete="email" required className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:ring-2 focus:ring-offset-2 focus:outline-none focus:ring-pink-500 sm:text-sm" placeholder="Email"/>
               </div>
               <div>
                 <label htmlFor="password" className="sr-only">
                   Senha
                 </label>
-                <input onChange={(e) => setPassword(e.target.value)} value={password} id="password" name="password" type="password" autoComplete="current-password" required className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-pink-500 focus:border-pink-500 focus:z-10 sm:text-sm" placeholder="Senha"/>
+                <input onChange={(e) => setPassword(e.target.value)} value={password} id="password" name="password" type="password" autoComplete="current-password" required className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:ring-2 focus:ring-offset-2 focus:outline-none focus:ring-pink-500 sm:text-sm" placeholder="Senha"/>
               </div>
             </div>
             <div>
-              <button type="submit" className="group relative w-full flex justify-center py-3 px-2 text-sm font-medium rounded-md text-white bg-gradient-to-r from-pink-500 to-yellow-500">
+              <button type="submit" disabled={loading} className='group relative w-full flex justify-center py-3 px-2 text-sm font-medium rounded-md text-white focus:ring-2 focus:ring-offset-2 outline-none focus:ring-pink-500 bg-gradient-to-r from-pink-500 to-yellow-500'>
                 <span className="absolute left-0 inset-y-0 flex items-center pl-3">
                   <LockSimple className="h-5 w-5 text-slate-200" aria-hidden="true" />
                 </span>
-                Acessar
+                {
+                  loading
+                  ? <Spinner size={28} className="animate-spin"/>
+                  : <span>Acessar</span>
+                }
               </button>
             </div>
+            <div className='flex gap-1 items-center flex-col'>
+                <button onClick={(e) => handleLoginSubmit(e, signInGithub)} disabled={loading} className='p-2 w-full flex justify-center rounded-lg bg-zinc-700 text-white'>
+                  <GithubLogo size={28}/>
+                </button>
+                <button onClick={(e) => handleLoginSubmit(e, signInGoogle)} disabled={loading} className='p-2 w-full flex justify-center rounded-lg bg-red-500 text-white'>
+                  <GoogleLogo size={28}/>
+                </button>
+              </div>
             <div className="flex items-center justify-center">
               <div className="text-sm">
-                <Link to="/register" className="font-medium text-pink-600 hover:text-pink-500">
-                  Não tem uma conta?
+                <Link to="/register" className="font-medium text-pink-600 hover:text-pink-500 hover:underline hover:underline-offset-2">
+                    Não tem uma conta?
                 </Link>
               </div>
             </div>
