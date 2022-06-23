@@ -1,10 +1,15 @@
-import { LockSimple, Code, GithubLogo, GoogleLogo, Spinner } from 'phosphor-react'
-import { OAuthCredential, UserCredential, UserInfo, UserMetadata } from 'firebase/auth'
 import { FormEvent, useContext, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { AuthContext, User } from '../../contexts/AuthContext'
-import { Link } from 'react-router-dom'
-import { signInGoogle, signInGithub, signInUser } from '../../services/firebase'
+import { useNavigate, Link } from 'react-router-dom'
+import { LockSimple, Code, GithubLogo, GoogleLogo, Spinner } from 'phosphor-react'
+import { UserInfo } from 'firebase/auth'
+import { AuthContext } from '../../contexts/AuthContext'
+import { signInGoogle, signInGithub, signInUser, SignUser } from '../../services/firebase'
+
+interface LoginSubmit {
+  event: FormEvent,
+  authenticate?: () => Promise<{ user: UserInfo | null, token?: string | undefined } | null>,
+}
+
 
 const SignIn = () => {
     const { setUser, setLoading, loading } = useContext(AuthContext)
@@ -12,21 +17,22 @@ const SignIn = () => {
     const [password, setPassword] = useState<string>('')
     const navigate = useNavigate()
 
-    const saveUserIntoStorage = (user: User, token: string | undefined) => {
+    const saveUserIntoStorage = (user: UserInfo, token: string | undefined) => {
         setUser(user)
         sessionStorage.setItem('@AuthFirebase:token', token || "")
         sessionStorage.setItem('@AuthFirebase:user', JSON.stringify(user))
     }
 
-    const handleLoginSubmit = async (e: FormEvent, signIn: () => Promise<{ user: UserInfo | null; token: string | undefined } | null> ) => {
-      e.preventDefault()
+    const handleLoginSubmit = async ({ event , authenticate }: LoginSubmit ) => {
+      event.preventDefault()
       setLoading(true)
-      const sign = await signIn()
+      const sign = (authenticate ? await authenticate() : await signInUser({ email, password }))
       if(sign?.user?.email){
-        saveUserIntoStorage({ email: sign?.user.email, name: sign?.user.displayName }, sign?.token)
+        saveUserIntoStorage(sign.user, sign?.token)
         setLoading(false)
         navigate("/dashboard", { replace: true })
       }
+      setLoading(false)
     }
 
     return (
@@ -51,7 +57,7 @@ const SignIn = () => {
               </div>
             </div>
             <div>
-              <button type="submit" disabled={loading} className='group relative w-full flex justify-center py-3 px-2 text-sm font-medium rounded-md text-white focus:ring-2 focus:ring-offset-2 outline-none focus:ring-pink-500 bg-gradient-to-r from-pink-500 to-yellow-500'>
+              <button onClick={(e) => handleLoginSubmit({ event: e })} disabled={loading} className='group relative w-full flex justify-center py-3 px-2 text-sm font-medium rounded-md text-white focus:ring-2 focus:ring-offset-2 outline-none focus:ring-pink-500 bg-gradient-to-r from-pink-500 to-yellow-500'>
                 <span className="absolute left-0 inset-y-0 flex items-center pl-3">
                   <LockSimple className="h-5 w-5 text-slate-200" aria-hidden="true" />
                 </span>
@@ -63,10 +69,10 @@ const SignIn = () => {
               </button>
             </div>
             <div className='flex gap-1 items-center flex-col'>
-                <button onClick={(e) => handleLoginSubmit(e, signInGithub)} disabled={loading} className='p-2 w-full flex justify-center rounded-lg bg-zinc-700 text-white'>
+                <button onClick={(e) => handleLoginSubmit({event: e, authenticate:signInGithub })} disabled={loading} className='p-2 w-full flex justify-center rounded-lg bg-zinc-700 text-white'>
                   <GithubLogo size={28}/>
                 </button>
-                <button onClick={(e) => handleLoginSubmit(e, signInGoogle)} disabled={loading} className='p-2 w-full flex justify-center rounded-lg bg-red-500 text-white'>
+                <button onClick={(e) => handleLoginSubmit({event: e, authenticate:signInGoogle })} disabled={loading} className='p-2 w-full flex justify-center rounded-lg bg-red-500 text-white'>
                   <GoogleLogo size={28}/>
                 </button>
               </div>

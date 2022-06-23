@@ -1,13 +1,9 @@
 import { createContext } from 'react'
+import { UserInfo } from 'firebase/auth'
 
-export type User = {
-    email?: string | null,
-    name?: string | null
-}
-
-type AuthContextType = {
-    user: User | null,
-    setUser: (user: User) => void
+interface AuthContextType {
+    user: UserInfo,
+    setUser: (user: UserInfo) => void
     loading: boolean,
     setLoading: (isLoading: boolean) => void
     signed: boolean
