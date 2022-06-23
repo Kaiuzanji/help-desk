@@ -1,11 +1,30 @@
-import { LockSimple, Code } from 'phosphor-react'
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
-
+import { LockSimple, Code, Spinner } from 'phosphor-react'
+import { FormEvent, useContext, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { createUser } from '../../services/firebase'
+import { AuthContext } from '../../contexts/AuthContext'
+import { saveUserIntoStorage, authenticateUser, emailIsAlreadyRegistered } from '../../use-cases/authUser/authUserUseCase'
 const SignUp = () => {
+    const { setUser, setLoading, loading } = useContext(AuthContext)
     const [email, setEmail] = useState<string>('')
     const [password, setPassword] = useState<string>('')
     const [name, setName] = useState<string>('')
+    const navigate = useNavigate()
+
+    const handleSubmitForm = async (event: FormEvent) => {
+      event.preventDefault()
+      if(!emailIsAlreadyRegistered(email)){
+        await createUser({ email, password, name })
+        setLoading(true)
+        const authenticate = await authenticateUser({ email, password })
+        if(authenticate?.user?.email){
+          saveUserIntoStorage({ user: authenticate.user, token: "", setUser })
+          return navigate("/dashboard", { replace: true })  
+        }
+        setLoading(false)
+      }
+      alert('Este usuário já foi cadastrado!')
+    }
 
     return (
         <div className="min-h-full flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-green-400 to-blue-500 h-screen">
@@ -13,7 +32,7 @@ const SignUp = () => {
           <div>
             <Code className="mx-auto h-20 w-auto rounded-full text-slate-200 p-4 bg-gradient-to-r from-pink-500 to-yellow-500"/>
           </div>
-          <form className="mt-8 space-y-6" action="#" method="POST">
+          <form className="mt-8 space-y-6" onSubmit={handleSubmitForm}>
             <div className="rounded-md shadow-sm -space-y-px flex flex-col gap-2">
               <div>
                 <label htmlFor="text" className="sr-only">
@@ -35,11 +54,15 @@ const SignUp = () => {
               </div>
             </div>
             <div>
-              <button type="submit" className="group relative w-full flex justify-center py-3 px-2 text-sm font-medium rounded-md text-white bg-gradient-to-r from-pink-500 to-yellow-500">
+              <button disabled={loading} type="submit" className="group relative w-full flex justify-center py-3 px-2 text-sm font-medium rounded-md text-white bg-gradient-to-r from-pink-500 to-yellow-500">
                 <span className="absolute left-0 inset-y-0 flex items-center pl-3">
                   <LockSimple className="h-5 w-5 text-slate-200" aria-hidden="true" />
                 </span>
-                Criar conta
+                {
+                  loading
+                  ? <Spinner size={24} className="animate-spin"/>
+                  : <span>Criar conta</span>
+                }
               </button>
             </div>
             <div className="flex items-center justify-center">

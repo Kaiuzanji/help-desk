@@ -1,11 +1,17 @@
 import { createContext } from 'react'
-import { UserInfo } from 'firebase/auth'
+
+export interface UserInfo {
+    email: string | null,
+    name: string | null,
+    phoneNumber: string | null,
+    photo: string | null
+}
 
 interface AuthContextType {
-    user: UserInfo,
+    user: UserInfo | null,
     setUser: (user: UserInfo) => void
-    loading: boolean,
-    setLoading: (isLoading: boolean) => void
+    authLoading: boolean,
+    setAuthLoading: (isLoading: boolean) => void
     signed: boolean
 }
 
