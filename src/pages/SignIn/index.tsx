@@ -1,9 +1,8 @@
 import { FormEvent, useContext, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { LockSimple, Code, GithubLogo, GoogleLogo, Spinner } from 'phosphor-react'
-import { AuthContext, UserInfo } from '../../contexts/AuthContext'
 import { signInGoogle, signInGithub } from '../../services/firebase'
-import { saveUserIntoStorage, authenticateUser } from '../../use-cases/authUser/authUserUseCase'
+import { AuthContext, UserInfo } from '../../contexts/Auth/AuthContext'
 
 interface LoginSubmit {
   event: FormEvent,
@@ -11,7 +10,7 @@ interface LoginSubmit {
 }
 
 const SignIn = () => {
-    const { setUser } = useContext(AuthContext)
+    const { signIn } = useContext(AuthContext)
     const [email, setEmail] = useState<string>('')
     const [password, setPassword] = useState<string>('')
     const [loading, setLoading] = useState<boolean>(false)
@@ -20,11 +19,9 @@ const SignIn = () => {
     const handleLoginSubmit = async ({ event , authCallback }: LoginSubmit ) => {
       event.preventDefault()
       setLoading(true)
-      const sign = await authenticateUser({ email, password }, authCallback) 
-      if(sign?.user?.email){
-        saveUserIntoStorage({ user:sign.user, token:sign?.token, setUser })
+      const login = await signIn({ email, password }, authCallback)
+      if(login)
         navigate("/dashboard", { replace: true })
-      }
       setLoading(false)
     }
 

@@ -1,28 +1,29 @@
 import { LockSimple, Code, Spinner } from 'phosphor-react'
 import { FormEvent, useContext, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { createUser } from '../../services/firebase'
-import { AuthContext } from '../../contexts/AuthContext'
-import { saveUserIntoStorage, authenticateUser, emailIsAlreadyRegistered } from '../../use-cases/authUser/authUserUseCase'
+import { createUser, getUsers } from '../../services/firebase'
+import { AuthContext } from '../../contexts/Auth/AuthContext'
+
 const SignUp = () => {
-    const { setUser, setLoading, loading } = useContext(AuthContext)
+    const { signIn } = useContext(AuthContext)
     const [email, setEmail] = useState<string>('')
     const [password, setPassword] = useState<string>('')
     const [name, setName] = useState<string>('')
+    const [loading, setLoading] = useState<boolean>(false)
     const navigate = useNavigate()
 
     const handleSubmitForm = async (event: FormEvent) => {
       event.preventDefault()
-      if(!emailIsAlreadyRegistered(email)){
+      setLoading(true)
+      if(!(await getUsers(email))){
         await createUser({ email, password, name })
-        setLoading(true)
-        const authenticate = await authenticateUser({ email, password })
-        if(authenticate?.user?.email){
-          saveUserIntoStorage({ user: authenticate.user, token: "", setUser })
-          return navigate("/dashboard", { replace: true })  
+        const login = await signIn({ email, password })
+        if(login){
+          return navigate("/dashboard", { replace: true })
         }
         setLoading(false)
       }
+      setLoading(false)
       alert('Este usuário já foi cadastrado!')
     }
 
