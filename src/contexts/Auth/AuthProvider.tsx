@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { AuthContext, UserInfo, FormLogin } from './AuthContext'
-import { createUser, getUsers, signInUser } from '../../services/firebase'
+import { createUser, getUserbyEmail, signInUser } from '../../services/firebase'
 
 interface AuthStorage {
     user: UserInfo,
@@ -20,7 +20,7 @@ export const AuthProvider = ({ children }: { children: JSX.Element }) => {
     const authenticateUser = async ({ email, password }: FormLogin, authenticate?: () =>  Promise<{ user: UserInfo | null, token?: string | undefined } | null> ) => {
         const sign = (authenticate ? await authenticate() : await signInUser({ email, password }))
         if(sign?.user?.email){
-            if(!(await getUsers(sign.user.email)) && authenticate)
+            if(!(await getUserbyEmail(sign.user.email)) && authenticate)
                 await createUser({ email: sign.user.email, name: sign.user.name, password: "" })
             return sign
         }

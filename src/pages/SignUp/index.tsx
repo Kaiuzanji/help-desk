@@ -1,7 +1,7 @@
 import { LockSimple, Code, Spinner } from 'phosphor-react'
 import { FormEvent, useContext, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { createUser, getUsers } from '../../services/firebase'
+import { createUser, getUserbyEmail } from '../../services/firebase'
 import { AuthContext } from '../../contexts/Auth/AuthContext'
 
 const SignUp = () => {
@@ -15,7 +15,7 @@ const SignUp = () => {
     const handleSubmitForm = async (event: FormEvent) => {
       event.preventDefault()
       setLoading(true)
-      if(!(await getUsers(email))){
+      if(!(await getUserbyEmail(email))){
         await createUser({ email, password, name })
         const login = await signIn({ email, password })
         if(login){

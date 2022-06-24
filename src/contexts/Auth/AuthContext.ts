@@ -4,7 +4,8 @@ export interface UserInfo {
     email: string | null,
     name: string | null,
     phoneNumber: string | null,
-    photo: string | null
+    photo: string | null,
+    uid: string
 }
 
 export interface FormLogin {

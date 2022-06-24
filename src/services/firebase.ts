@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app'
-import { addDoc, collection, getDocs, getFirestore } from 'firebase/firestore'
+import { addDoc, collection, getDocs, getFirestore, query, where } from 'firebase/firestore'
 import { GoogleAuthProvider, getAuth, signInWithPopup, signInWithEmailAndPassword, GithubAuthProvider, UserInfo, createUserWithEmailAndPassword } from 'firebase/auth'
 import { firebaseConfig } from '../config/settings'
 // Your web app's Firebase configuration
@@ -23,7 +23,8 @@ const treatResultSign = (user: UserInfo) => {
         email: user.email,
         name: user.displayName,
         phoneNumber: user.phoneNumber,
-        photo: user.photoURL
+        photo: user.photoURL,
+        uid: user.uid
     }
 }
 
@@ -72,11 +73,17 @@ export const createUser = async (user: UserProfile) => {
     })
 }
 
-export const getUsers = async (email?: string) => {
+export const getUsers = async () => {
     const db = getFirestore(app)
     const userCollection = collection(db, "users")
     const queryUsers = await getDocs(userCollection)
-    if(email)
-        return queryUsers.docs.find( doc => doc.data().email === email)
     return queryUsers.docs.map( doc => doc.data())
+}
+
+export const getUserbyEmail = async (email: string) => {
+    const db = getFirestore(app)
+    const userCollection = collection(db, "users")
+    const queryUsers = query(userCollection, where("email", "==", email))
+    const userDocs = await getDocs(queryUsers) 
+    return userDocs.docs.map( doc => doc.data())[0]
 }

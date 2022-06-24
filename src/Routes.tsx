@@ -1,6 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { ComponentType, useContext, useEffect } from 'react'
-import { getUsers } from './services/firebase'
+import { getUserbyEmail } from './services/firebase'
 import { AuthContext } from './contexts/Auth/AuthContext'
 import SignIn from './pages/SignIn'
 import SignUp from './pages/SignUp'
@@ -14,7 +14,7 @@ const AppRoutes = () => {
             const sessionUser = sessionStorage.getItem('@AuthFirebase:user')
             if(sessionUser){
                 const user = JSON.parse(sessionUser)
-                if(await getUsers(user.email))
+                if(await getUserbyEmail(user.email))
                     setUser(user)
             }
             setAuthLoading(false)
