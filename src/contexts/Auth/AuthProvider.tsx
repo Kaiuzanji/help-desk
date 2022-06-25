@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { AuthContext, UserInfo, FormLogin } from './AuthContext'
+import { AuthContext, UserInfo, FormLogin, FormRegister } from './AuthContext'
 import { createUser, getUserbyEmail, signInUser } from '../../services/firebase'
 
 interface AuthStorage {
@@ -35,14 +35,31 @@ export const AuthProvider = ({ children }: { children: JSX.Element }) => {
         return !!sign?.user
     }
 
-    const signOut = () => {
+    const signUp = async ({ email, password, name }: FormRegister) => {
+        const validate = { invalid: false, emailAlreadyRegistered: false }
+        if(!email || !password ||  !name)
+            validate.invalid = true
+
+        if(!validate.invalid){
+            if(!(await getUserbyEmail(email))){
+                const user = await createUser({ email,  password, name })
+                if(user)
+                    saveUserIntoStorage({ user:user })
+            }
+            else
+                validate.emailAlreadyRegistered = true
+        }   
+        return validate
+    }
+
+    const logout = () => {
         sessionStorage.removeItem('@AuthFirebase:token')
         sessionStorage.removeItem('@AuthFirebase:user')
         setUser(null)
     }
 
     return (
-        <AuthContext.Provider value={{ user: user, setUser, authLoading, setAuthLoading, signIn, signOut }}>
+        <AuthContext.Provider value={{ user: user, setUser, authLoading, setAuthLoading, signIn, signUp, logout }}>
         {children}
         </AuthContext.Provider>
     )

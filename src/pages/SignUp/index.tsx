@@ -1,11 +1,10 @@
 import { LockSimple, Code, Spinner } from 'phosphor-react'
 import { FormEvent, useContext, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { createUser, getUserbyEmail } from '../../services/firebase'
 import { AuthContext } from '../../contexts/Auth/AuthContext'
 
 const SignUp = () => {
-    const { signIn } = useContext(AuthContext)
+    const { signUp } = useContext(AuthContext)
     const [email, setEmail] = useState<string>('')
     const [password, setPassword] = useState<string>('')
     const [name, setName] = useState<string>('')
@@ -15,16 +14,17 @@ const SignUp = () => {
     const handleSubmitForm = async (event: FormEvent) => {
       event.preventDefault()
       setLoading(true)
-      if(!(await getUserbyEmail(email))){
-        await createUser({ email, password, name })
-        const login = await signIn({ email, password })
-        if(login){
-          return navigate("/dashboard", { replace: true })
-        }
-        setLoading(false)
-      }
+      const register = await signUp({ email, password, name })
+      
+      if(register.invalid)
+        alert('Preencha todos os campos para!')
+
+      if(register.emailAlreadyRegistered)
+        alert('Este e-mail já foi cadastrado!')
+
+      if(!register.invalid && !register.emailAlreadyRegistered)
+        navigate("/dashboard", { replace: true })
       setLoading(false)
-      alert('Este usuário já foi cadastrado!')
     }
 
     return (

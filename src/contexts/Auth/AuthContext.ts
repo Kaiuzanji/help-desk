@@ -13,13 +13,20 @@ export interface FormLogin {
     password: string
 }
 
+export interface FormRegister {
+    email: string,
+    password: string,
+    name: string
+}
+
 export interface AuthContextType {
     user: UserInfo | null,
     setUser: (user: UserInfo | null) => void,
     authLoading: boolean,
     setAuthLoading: (isLoading: boolean) => void,
     signIn: ({}: FormLogin, authCallback?: () =>  Promise<{ user: UserInfo | null, token?: string | undefined } | null>) => Promise<boolean>,
-    signOut: () => void
+    signUp: ({}: FormRegister) => Promise<{ invalid: boolean, emailAlreadyRegistered: boolean }>,
+    logout: () => void
 }
 
 export const AuthContext = createContext({} as AuthContextType)
