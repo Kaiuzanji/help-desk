@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { LockSimple, Code, GithubLogo, GoogleLogo, Spinner } from 'phosphor-react'
 import { signInGoogle, signInGithub } from '../../services/firebase'
 import { AuthContext, UserInfo } from '../../contexts/Auth/AuthContext'
-
+import { toast } from 'react-toastify'
 interface LoginSubmit {
   event: FormEvent,
   authCallback?: () => Promise<{ user: UserInfo | null, token?: string | undefined } | null>,
@@ -20,9 +20,12 @@ const SignIn = () => {
       event.preventDefault()
       setLoading(true)
       const login = await signIn({ email, password }, authCallback)
-      if(login)
-        navigate("/dashboard", { replace: true })
+      if(login){
+        toast.success("Logado com sucesso!")
+        return navigate("/dashboard", { replace: true })
+      }
       setLoading(false)
+      toast.warn("Usuário não autenticado!")
     }
 
     return (

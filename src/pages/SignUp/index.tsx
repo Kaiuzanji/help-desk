@@ -2,7 +2,7 @@ import { LockSimple, Code, Spinner } from 'phosphor-react'
 import { FormEvent, useContext, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { AuthContext } from '../../contexts/Auth/AuthContext'
-
+import { toast } from 'react-toastify'
 const SignUp = () => {
     const { signUp } = useContext(AuthContext)
     const [email, setEmail] = useState<string>('')
@@ -17,13 +17,15 @@ const SignUp = () => {
       const register = await signUp({ email, password, name })
       
       if(register.invalid)
-        alert('Preencha todos os campos para!')
+        toast.warn('Preencha todos os campos para!')
 
       if(register.emailAlreadyRegistered)
-        alert('Este e-mail já foi cadastrado!')
+        toast.warn('Este e-mail já foi cadastrado!')
 
-      if(!register.invalid && !register.emailAlreadyRegistered)
-        navigate("/dashboard", { replace: true })
+      if(!register.invalid && !register.emailAlreadyRegistered){
+        toast.success('Usuário cadastrado com sucesso!')
+        return navigate("/dashboard", { replace: true })
+      }
       setLoading(false)
     }
 
